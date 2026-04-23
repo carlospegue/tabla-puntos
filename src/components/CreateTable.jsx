@@ -1,69 +1,133 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/pocketbase';
+﻿import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "../lib/pocketbase"
 
 function CreateTable() {
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [phone, setPhone] = useState('');
-  const navigate = useNavigate();
+  const [name, setName] = useState("")
+  const [surname, setSurname] = useState("")
+  const [phone, setPhone] = useState("")
+  const [tableName, setTableName] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    setLoading(true)
+    setError("")
     try {
-      // Create user in database
       const { data: user, error: userError } = await supabase
-        .from('users')
+        .from("users")
         .insert([{ name, surname, phone }])
-        .select();
+        .select()
 
-      if (userError) throw userError;
-      const userId = user[0].id;
+      if (userError) throw userError
+      const userId = user[0].id
 
-      // Create table
       const { data: table, error: tableError } = await supabase
-        .from('tables')
-        .insert([{ creator: userId }])
-        .select();
+        .from("tables")
+        .insert([{ creator: userId, name: tableName }])
+        .select()
 
-      if (tableError) throw tableError;
-      const tableId = table[0].id;
+      if (tableError) throw tableError
+      const tableId = table[0].id
 
-      // Add creator as player
       const { error: playerError } = await supabase
-        .from('table_players')
-        .insert([{ table_id: tableId, user_id: userId, points: 0 }]);
+        .from("table_players")
+        .insert([{ table_id: tableId, user_id: userId, points: 0 }])
 
-      if (playerError) throw playerError;
-
-      // Navigate to table view
-      navigate(`/table/${tableId}`);
+      if (playerError) throw playerError
+      navigate(`/table/${tableId}`)
     } catch (error) {
-      console.error('Error creating table:', error);
-      alert('Error al crear la tabla');
+      console.error("Error creating table:", error)
+      setError("Error al crear la tabla. Por favor intenta de nuevo.")
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="container">
-      <h1>Crear Tabla de Amigos</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Nombre:</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Crear Tabla</h1>
+          <p className="text-gray-600">Configura tu tabla de puntuación</p>
         </div>
-        <div className="form-group">
-          <label>Apellidos:</label>
-          <input type="text" value={surname} onChange={(e) => setSurname(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Número de Teléfono:</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-        </div>
-        <button type="submit" className="btn btn-primary">Crear Tabla</button>
-      </form>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nombre
+            </label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              placeholder="Tu nombre"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              required 
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Apellidos
+            </label>
+            <input 
+              type="text" 
+              value={surname} 
+              onChange={(e) => setSurname(e.target.value)} 
+              placeholder="Tus apellidos"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              required 
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nombre de la Tabla
+            </label>
+            <input 
+              type="text" 
+              value={tableName} 
+              onChange={(e) => setTableName(e.target.value)} 
+              placeholder="Ej: Amigos de la Oficina"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              required 
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Número de Teléfono
+            </label>
+            <input 
+              type="tel" 
+              value={phone} 
+              onChange={(e) => setPhone(e.target.value)} 
+              placeholder="+34 600 000 000"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              required 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition duration-200 mt-6"
+          >
+            {loading ? "Creando tabla..." : "Crear Tabla"}
+          </button>
+        </form>
+      </div>
     </div>
-  );
+  )
 }
 
-export default CreateTable;
+export default CreateTable
