@@ -9,6 +9,9 @@ function TableView() {
   const [players, setPlayers] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
 
+  const sortPlayers = (playersList) =>
+    [...playersList].sort((a, b) => b.points - a.points);
+
   const handleGoHome = () => {
     const confirmLeave = window.confirm(
       'Se perderá la tabla actual y volverás a la página principal. ¿Deseas continuar?'
@@ -38,14 +41,16 @@ function TableView() {
         .select('id, points, users:user_id(id, name, surname, phone)')
         .eq('table_id', id);
       
-      setPlayers(playerRecords.map(p => ({
+      const formattedPlayers = playerRecords.map(p => ({
         id: p.users.id,
         name: p.users.name,
         surname: p.users.surname,
         phone: p.users.phone,
         points: p.points,
         playerId: p.id
-      })));
+      }));
+
+      setPlayers(sortPlayers(formattedPlayers));
     } catch (error) {
       console.error('Error loading table:', error);
     }
@@ -76,14 +81,17 @@ function TableView() {
         .insert([{ table_id: id, user_id: userId, points: 0 }])
         .select();
 
-      setPlayers([...players, {
-        id: userId,
-        name: newPlayerName,
-        surname: '',
-        phone: '',
-        points: 0,
-        playerId: player[0].id
-      }]);
+      setPlayers(sortPlayers([
+        ...players,
+        {
+          id: userId,
+          name: newPlayerName,
+          surname: '',
+          phone: '',
+          points: 0,
+          playerId: player[0].id
+        }
+      ]));
       setNewPlayerName('');
     } catch (error) {
       console.error('Error adding player:', error);
@@ -99,7 +107,7 @@ function TableView() {
         .from('table_players')
         .update({ points: newPoints })
         .eq('id', playerId);
-      setPlayers(players.map(p => p.playerId === playerId ? { ...p, points: newPoints } : p));
+      setPlayers(sortPlayers(players.map(p => p.playerId === playerId ? { ...p, points: newPoints } : p)));
     } catch (error) {
       console.error('Error updating points:', error);
     }
@@ -111,7 +119,7 @@ function TableView() {
         .from('table_players')
         .delete()
         .eq('id', playerId);
-      setPlayers(players.filter(p => p.playerId !== playerId));
+      setPlayers(sortPlayers(players.filter(p => p.playerId !== playerId)));
     } catch (error) {
       console.error('Error deleting player:', error);
     }
