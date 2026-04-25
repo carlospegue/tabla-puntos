@@ -1,6 +1,6 @@
 ﻿import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { supabase } from "../lib/pocketbase"
+import { supabase } from "../lib/supabase"
 
 function CreateTable() {
   const [name, setName] = useState("")
@@ -10,6 +10,16 @@ function CreateTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
+
+  const handleGoHome = () => {
+    const confirmLeave = window.confirm(
+      'Se perderá la tabla actual y volverás a la página principal. ¿Deseas continuar?'
+    )
+    if (confirmLeave) {
+      localStorage.removeItem('lastRoute')
+      navigate('/')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -47,11 +57,18 @@ function CreateTable() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Crear Tabla</h1>
           <p className="text-gray-600">Configura tu tabla de puntuación</p>
+          <button
+            type="button"
+            onClick={handleGoHome}
+            className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-800"
+          >
+            Volver a página principal
+          </button>
         </div>
 
         {error && (
@@ -111,7 +128,7 @@ function CreateTable() {
               type="tel" 
               value={phone} 
               onChange={(e) => setPhone(e.target.value)} 
-              placeholder="+34 600 000 000"
+              placeholder="+53 58204096"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               required 
             />

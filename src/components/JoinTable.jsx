@@ -1,6 +1,6 @@
 ﻿import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { supabase } from "../lib/pocketbase"
+import { supabase } from "../lib/supabase"
 
 function JoinTable() {
   const [name, setName] = useState("")
@@ -15,6 +15,16 @@ function JoinTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
+
+  const handleGoHome = () => {
+    const confirmLeave = window.confirm(
+      'Se perderá la tabla actual y volverás a la página principal. ¿Deseas continuar?'
+    )
+    if (confirmLeave) {
+      localStorage.removeItem('lastRoute')
+      navigate('/')
+    }
+  }
 
   const generateCode = () => {
     return Math.random().toString().slice(2, 8)
@@ -107,13 +117,20 @@ function JoinTable() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Unirse a Tabla</h1>
           <p className="text-gray-600">
             {step === 1 ? "Ingresa tus datos" : "Verifica tu código"}
           </p>
+          <button
+            type="button"
+            onClick={handleGoHome}
+            className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-800"
+          >
+            Volver a página principal
+          </button>
         </div>
 
         {error && (
@@ -190,7 +207,7 @@ function JoinTable() {
           </form>
         ) : (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6 text-center">
+            <div className="bg-linear-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6 text-center">
               <p className="text-gray-600 text-sm mb-3">Código de verificación</p>
               <div className="text-5xl font-bold text-green-600 tracking-widest font-mono mb-3">
                 {generatedCode}

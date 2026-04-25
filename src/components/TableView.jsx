@@ -1,12 +1,23 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { supabase } from '../lib/pocketbase';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 function TableView() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [table, setTable] = useState(null);
   const [players, setPlayers] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
+
+  const handleGoHome = () => {
+    const confirmLeave = window.confirm(
+      'Se perderá la tabla actual y volverás a la página principal. ¿Deseas continuar?'
+    )
+    if (confirmLeave) {
+      localStorage.removeItem('lastRoute')
+      navigate('/')
+    }
+  }
 
   useEffect(() => {
     loadTable();
@@ -110,7 +121,16 @@ function TableView() {
 
   return (
     <div className="container">
-      <h1>Tabla de Puntos</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold mb-2">Tabla de Puntos</h1>
+        <button
+          type="button"
+          onClick={handleGoHome}
+          className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+        >
+          Volver a página principal
+        </button>
+      </div>
       <div>
         <input
           type="text"
@@ -133,10 +153,22 @@ function TableView() {
             <tr key={player.playerId}>
               <td>{player.name}</td>
               <td>{player.points}</td>
-              <td>
-                <button onClick={() => updatePoints(player.playerId, 1)}>+</button>
-                <button onClick={() => updatePoints(player.playerId, -1)}>-</button>
-                <button onClick={() => deletePlayer(player.playerId)} className="btn btn-secondary">Eliminar</button>
+              <td className="space-x-2">
+                <button
+                  onClick={() => updatePoints(player.playerId, 1)}
+                  className="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-sm hover:bg-green-700 transition-colors duration-200"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => updatePoints(player.playerId, -1)}
+                  className="inline-flex items-center justify-center px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-sm hover:bg-yellow-600 transition-colors duration-200"
+                >
+                  -
+                </button>
+                <button onClick={() => deletePlayer(player.playerId)} className="btn btn-secondary">
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}
